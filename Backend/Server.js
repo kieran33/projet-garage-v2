@@ -68,3 +68,26 @@ app.delete('/api/remove/:email', (req, res) => {
         }
     })
 })
+
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    console.log('Je me connecte');
+
+    db.query("SELECT * FROM employes WHERE email = ?", [email], (err, results) => {
+        if (err) {
+            res.status(500).send('Erreur dans la recherche du compte employé');
+        } if (results.length === 0) {
+            console.log('Utilisateur non trouvé');
+            res.status(401).send('Utilisateur non trouvé');
+        }
+
+        const user = results[0];
+        bcrypt.compare(password, user.password, (err, result) => {
+            if (result) {
+                res.status(200).json({ success: true, message: "connexion réussis" });
+            } else {
+                res.status(401).json({ success: false, message: "mot de passe incorrect" });
+            }
+        })
+    })
+});
